@@ -35,8 +35,8 @@ jobs:
         run: |
           mkdir -p site/build/dev
           cp index.html animator.css site/
-          mkdir -p site/build/dev/javascript/animator
-          cp build/dev/javascript/animator/*.mjs site/build/dev/javascript/animator/
+          mkdir -p site/build/dev/javascript
+          find build/dev/javascript -type f -name '*.mjs' -exec cp --parents {} site/ \;
           touch site/.nojekyll
       - name: Setup Pages
         uses: actions/configure-pages@v5
