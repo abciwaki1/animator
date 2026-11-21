@@ -1,0 +1,9 @@
+My planned extension is to make the Animator more interactive by adding controls that allow users to adjust the drawing and animation directly from the interface.
+
+The first feature is a Shape slider. This slider will allow us to change the shape parameter without manually editing the program. When the slider changes, the application should update the parameter used the drawing function and refresh the displyed result.
+
+The second feature is a Speed slider. This control will allow users to adjust how quickly an animation progresses. Slower settings will make it easier to observe individual drawing changes, while faster settings will make it possible to see the animation develop more quickly.
+
+I also plan to include a Drawing selection menu allowing users to choose from available drawing through the interface. These controls should make Animator easier to experimetns with and more accesible to users who are unfamiliar with programming.
+
+The main implementation challenge will be connecting the controls to the application's state and ensuring that changes the displayed drawing correctly.
