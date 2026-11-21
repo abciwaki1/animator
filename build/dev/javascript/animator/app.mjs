@@ -102,7 +102,7 @@ const default_code = "fn draw(shape_slider: Int) -> List(Path) {\n  [Path(Line(P
  * Your app's public address, once you've deployed it in Problem 13, such as
  * "https://your-username.github.io/animator/".
  */
-export const public_url = "";
+export const public_url = "https://abciwaki1.github.io/animator/";
 
 /**
  * Set to True if you would like your app's URL included in the course gallery.
@@ -112,7 +112,7 @@ export const include_app_in_gallery = false;
 /**
  * A link to your video from Problem 14, which anyone with the link can watch.
  */
-export const video_url = "";
+export const video_url = "https://drive.google.com/file/d/1yDMwDHWbDMlAG71_b4wEyGiUcf9FVOJx/view?usp=sharing";
 
 /**
  * Set to True if you would like your video included in the course gallery.
@@ -165,7 +165,7 @@ export function update(model, msg) {
           (_) => {
             let render_paths = $list.map(
               paths,
-              (path) => { return $render.render_path(path, "black"); },
+              (path) => { return $render.render_path(path, "white"); },
             );
             $render.set_drawing(render_paths);
             return $render.reset_clock();
@@ -214,7 +214,7 @@ export function update(model, msg) {
           (_) => {
             let render_paths = $list.map(
               paths,
-              (path) => { return $render.render_path(path, "black"); },
+              (path) => { return $render.render_path(path, "white"); },
             );
             $render.set_drawing(render_paths);
             return $render.reset_clock();
@@ -493,10 +493,10 @@ export function main() {
       "Pattern match failed, no pattern matched the value.",
       {
         value: $,
-        start: 8531,
-        end: 8580,
-        pattern_start: 8542,
-        pattern_end: 8547
+        start: 8650,
+        end: 8699,
+        pattern_start: 8661,
+        pattern_end: 8666
       }
     )
   }

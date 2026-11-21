@@ -22,13 +22,13 @@ import shape.{type Path}
 
 /// Your app's public address, once you've deployed it in Problem 13, such as
 /// "https://your-username.github.io/animator/".
-pub const public_url = ""
+pub const public_url = "https://abciwaki1.github.io/animator/"
 
 /// Set to True if you would like your app's URL included in the course gallery.
 pub const include_app_in_gallery = False
 
 /// A link to your video from Problem 14, which anyone with the link can watch.
-pub const video_url = ""
+pub const video_url = "https://drive.google.com/file/d/1yDMwDHWbDMlAG71_b4wEyGiUcf9FVOJx/view?usp=sharing"
 
 /// Set to True if you would like your video included in the course gallery.
 pub const include_video_in_gallery = False
@@ -131,7 +131,7 @@ _ ->
          Model(..model, shape_value: value, output: string.inspect(paths)),
          effect.from(fn(_dispatch) {
          let render_paths = list.map(paths, fn(path) {
-           render.render_path(path, "black")
+           render.render_path(path, "white")
             })
            render.set_drawing(render_paths)
            render.reset_clock()
@@ -172,7 +172,7 @@ _ ->
           Model(..model, output: string.inspect(paths), source: text),
           effect.from(fn(_dispatch) {
             let render_paths = list.map(paths, fn(path) {
-              render.render_path(path, "black")
+              render.render_path(path, "white")
             })
             render.set_drawing(render_paths)
             render.reset_clock()

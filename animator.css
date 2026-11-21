@@ -177,7 +177,8 @@ html, body { width: 100%; height: 100%; overflow: hidden; }
 /* A centred square that fits the (possibly non-square) animation area. Give your
    <canvas> this class, so that drawings aren't stretched. */
 .canvas {
-  width: min(100cqw, 100cqh);
-  height: min(100cqw, 100cqh);
+  width: min(100%, 80vh);
+  height: auto;
+  aspect-ratio: 1 / 1;
 }
 

@@ -96,9 +96,10 @@ function ensureSize() {
   const dpr = window.devicePixelRatio || 1;
   const w = Math.round(canvas.clientWidth * dpr);
   const h = Math.round(canvas.clientHeight * dpr);
+
   if (w > 0 && h > 0 && (canvas.width !== w || canvas.height !== h)) {
-    canvas.width = w;
-    canvas.height = h;
+    canvas.width = Math.min(w, 2048);
+    canvas.height = Math.min(h, 2048);
   }
 }
 
