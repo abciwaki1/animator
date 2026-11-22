@@ -19,6 +19,11 @@ import parser
 import render
 import shape.{type Path}
 
+@external(javascript, "./storage_ffi.mjs", "saveCode")
+fn save_code(name: String, code: String) -> Nil
+
+@external(javascript, "./storage_ffi.mjs", "loadCode")
+fn load_code(name: String, fallback: String) -> String
 
 /// Your app's public address, once you've deployed it in Problem 13, such as
 /// "https://your-username.github.io/animator/".
@@ -41,6 +46,7 @@ pub type Model {
   Model(
     // The code in the editor.
     source: String,
+    drawing_name: String,
     // Whether the code editor is shown.
     code_open: Bool,
     output: String,
@@ -65,6 +71,7 @@ pub fn init(_flags: Nil) -> #(Model, Effect(Msg)) {
   #(
     Model(
       source:"",
+      drawing_name: "default",
       code_open:True,
       output:"",
       shape_value: 10,
@@ -72,8 +79,10 @@ pub fn init(_flags: Nil) -> #(Model, Effect(Msg)) {
     ),
     // Effects that happen automatically at the start go here.
     effect.batch([
-      editor.mount(default_code, SetCode),
-      effect.from(fn(dispatch) { dispatch(SetCode(default_code)) }),
+      editor.mount(load_code("default", default_code), SetCode),
+      effect.from(fn(dispatch) {
+        dispatch(SetCode(load_code("default", default_code)))
+      }),
     ]),
   )
 }
@@ -97,29 +106,34 @@ pub fn update(model: Model, msg: Msg) -> #(Model, Effect(Msg)) {
 
     SetDrawing(name) -> {
       case name {
-        "default" -> {
-  let #(new_model, draw_effect) = update(model, SetCode(default_code))
-  #(
-    new_model,
-    effect.batch([draw_effect, editor.mount(default_code, SetCode)]),
+       "default" -> {
+        let saved = load_code("default", default_code)
+        let selected_model = Model(..model, drawing_name: name)
+        let #(new_model, draw_effect) = update(selected_model, SetCode(saved))
+        #(
+         new_model,
+         effect.batch([draw_effect, editor.mount(saved, SetCode)]),
   )
 }
 
-_ ->
-  case list.key_find(examples.all, name) {
-    Ok(source) -> {
-      let #(new_model, draw_effect) = update(model, SetCode(source))
-      #(
-        new_model,
-        effect.batch([draw_effect, editor.mount(source, SetCode)]),
-      )
-    }
-
-            Error(_) ->
-              #(model, effect.none())
+      _ ->
+        case list.key_find(examples.all, name) {
+          Ok(source) -> {
+            let saved = load_code(name, source)
+            let selected_model = Model(..model, drawing_name: name)
+            let #(new_model, draw_effect) =
+              update(selected_model, SetCode(saved))
+            #(
+              new_model,
+              effect.batch([draw_effect, editor.mount(saved, SetCode)]),
+            )
           }
-      }
+
+          Error(_) ->
+            #(model, effect.none())
+        }
     }
+  }
 
 
     SetShape(text) -> {
@@ -148,8 +162,8 @@ _ ->
 
     SetSpeed(text) -> {
       let value = result.unwrap(int.parse(text), model.speed_value)
-      let rate = int.to_float(value) /. 50.0
-
+      let offset = int.to_float(value) -. 50.0
+      let rate = offset /. 50.0
       #(
         Model(..model, speed_value: value),
         effect.from(fn(_dispatch) {
@@ -171,6 +185,7 @@ _ ->
         Ok(paths) -> #(
           Model(..model, output: string.inspect(paths), source: text),
           effect.from(fn(_dispatch) {
+            save_code(model.drawing_name, text)
             let render_paths = list.map(paths, fn(path) {
               render.render_path(path, "white")
             })
@@ -184,8 +199,11 @@ _ ->
         // Broken (parse or evaluation): show the error.
         Error(msg) -> #(
           Model(..model, output: msg, source: text),
-          effect.none(),
+          effect.from(fn(_dispatch) {
+            save_code(model.drawing_name, text)
+          }),
         )
+
       }
   }
 }

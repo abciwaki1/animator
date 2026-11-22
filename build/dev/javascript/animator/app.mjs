@@ -24,32 +24,36 @@ import {
 import * as $parser from "./parser.mjs";
 import * as $render from "./render.mjs";
 import * as $shape from "./shape.mjs";
+import { saveCode as save_code, loadCode as load_code } from "./storage_ffi.mjs";
 
 const FILEPATH = "src/app.gleam";
 
 export class Model extends $CustomType {
-  constructor(source, code_open, output, shape_value, speed_value) {
+  constructor(source, drawing_name, code_open, output, shape_value, speed_value) {
     super();
     this.source = source;
+    this.drawing_name = drawing_name;
     this.code_open = code_open;
     this.output = output;
     this.shape_value = shape_value;
     this.speed_value = speed_value;
   }
 }
-export const Model$Model = (source, code_open, output, shape_value, speed_value) =>
-  new Model(source, code_open, output, shape_value, speed_value);
+export const Model$Model = (source, drawing_name, code_open, output, shape_value, speed_value) =>
+  new Model(source, drawing_name, code_open, output, shape_value, speed_value);
 export const Model$isModel = (value) => value instanceof Model;
 export const Model$Model$source = (value) => value.source;
 export const Model$Model$0 = (value) => value.source;
+export const Model$Model$drawing_name = (value) => value.drawing_name;
+export const Model$Model$1 = (value) => value.drawing_name;
 export const Model$Model$code_open = (value) => value.code_open;
-export const Model$Model$1 = (value) => value.code_open;
+export const Model$Model$2 = (value) => value.code_open;
 export const Model$Model$output = (value) => value.output;
-export const Model$Model$2 = (value) => value.output;
+export const Model$Model$3 = (value) => value.output;
 export const Model$Model$shape_value = (value) => value.shape_value;
-export const Model$Model$3 = (value) => value.shape_value;
+export const Model$Model$4 = (value) => value.shape_value;
 export const Model$Model$speed_value = (value) => value.speed_value;
-export const Model$Model$4 = (value) => value.speed_value;
+export const Model$Model$5 = (value) => value.speed_value;
 
 export class SetCode extends $CustomType {
   constructor($0) {
@@ -121,13 +125,18 @@ export const include_video_in_gallery = false;
 
 export function init(_) {
   return [
-    new Model("", true, "", 10, 50),
+    new Model("", "default", true, "", 10, 50),
     $effect.batch(
       listPrepend(
-        $editor.mount(default_code, (var0) => { return new SetCode(var0); }),
+        $editor.mount(
+          load_code("default", default_code),
+          (var0) => { return new SetCode(var0); },
+        ),
         listPrepend(
           $effect.from(
-            (dispatch) => { return dispatch(new SetCode(default_code)); },
+            (dispatch) => {
+              return dispatch(new SetCode(load_code("default", default_code)));
+            },
           ),
           $List$Empty$const,
         ),
@@ -156,6 +165,7 @@ export function update(model, msg) {
       return [
         new Model(
           text,
+          model.drawing_name,
           model.code_open,
           $string.inspect(paths),
           model.shape_value,
@@ -163,6 +173,7 @@ export function update(model, msg) {
         ),
         $effect.from(
           (_) => {
+            save_code(model.drawing_name, text);
             let render_paths = $list.map(
               paths,
               (path) => { return $render.render_path(path, "white"); },
@@ -177,18 +188,20 @@ export function update(model, msg) {
       return [
         new Model(
           text,
+          model.drawing_name,
           model.code_open,
           msg$1,
           model.shape_value,
           model.speed_value,
         ),
-        $effect.none(),
+        $effect.from((_) => { return save_code(model.drawing_name, text); }),
       ];
     }
   } else if (msg instanceof ToggleCode) {
     return [
       new Model(
         model.source,
+        model.drawing_name,
         !model.code_open,
         model.output,
         model.shape_value,
@@ -205,6 +218,7 @@ export function update(model, msg) {
       return [
         new Model(
           model.source,
+          model.drawing_name,
           model.code_open,
           $string.inspect(paths),
           value,
@@ -226,6 +240,7 @@ export function update(model, msg) {
       return [
         new Model(
           model.source,
+          model.drawing_name,
           model.code_open,
           msg$1,
           value,
@@ -237,10 +252,12 @@ export function update(model, msg) {
   } else if (msg instanceof SetSpeed) {
     let text = msg[0];
     let value = $result.unwrap($int.parse(text), model.speed_value);
-    let rate = $int.to_float(value) / 50.0;
+    let offset = $int.to_float(value) - 50.0;
+    let rate = offset / 50.0;
     return [
       new Model(
         model.source,
+        model.drawing_name,
         model.code_open,
         model.output,
         model.shape_value,
@@ -251,7 +268,16 @@ export function update(model, msg) {
   } else {
     let name = msg[0];
     if (name === "default") {
-      let $ = update(model, new SetCode(default_code));
+      let saved = load_code("default", default_code);
+      let selected_model = new Model(
+        model.source,
+        name,
+        model.code_open,
+        model.output,
+        model.shape_value,
+        model.speed_value,
+      );
+      let $ = update(selected_model, new SetCode(saved));
       let new_model = $[0];
       let draw_effect = $[1];
       return [
@@ -260,10 +286,7 @@ export function update(model, msg) {
           listPrepend(
             draw_effect,
             listPrepend(
-              $editor.mount(
-                default_code,
-                (var0) => { return new SetCode(var0); },
-              ),
+              $editor.mount(saved, (var0) => { return new SetCode(var0); }),
               $List$Empty$const,
             ),
           ),
@@ -273,7 +296,16 @@ export function update(model, msg) {
       let $ = $list.key_find($examples.all, name);
       if ($ instanceof Ok) {
         let source = $[0];
-        let $1 = update(model, new SetCode(source));
+        let saved = load_code(name, source);
+        let selected_model = new Model(
+          model.source,
+          name,
+          model.code_open,
+          model.output,
+          model.shape_value,
+          model.speed_value,
+        );
+        let $1 = update(selected_model, new SetCode(saved));
         let new_model = $1[0];
         let draw_effect = $1[1];
         return [
@@ -282,7 +314,7 @@ export function update(model, msg) {
             listPrepend(
               draw_effect,
               listPrepend(
-                $editor.mount(source, (var0) => { return new SetCode(var0); }),
+                $editor.mount(saved, (var0) => { return new SetCode(var0); }),
                 $List$Empty$const,
               ),
             ),
@@ -488,15 +520,15 @@ export function main() {
       "let_assert",
       FILEPATH,
       "app",
-      299,
+      317,
       "main",
       "Pattern match failed, no pattern matched the value.",
       {
         value: $,
-        start: 8650,
-        end: 8699,
-        pattern_start: 8661,
-        pattern_end: 8666
+        start: 9452,
+        end: 9501,
+        pattern_start: 9463,
+        pattern_end: 9468
       }
     )
   }
